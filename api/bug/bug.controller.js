@@ -5,8 +5,8 @@ import { socketService } from '../../services/socket.service.js'
 export async function getBugs(req, res) {
     try {
         const filterBy = {
-            // email: req.query.email || '',
-            // txt: req.query.txt || '',
+            name: req.query.title || '',
+            severity: +req.query.severity || 0,
         }
         const bugs = await bugService.query(filterBy)
         res.send(bugs)

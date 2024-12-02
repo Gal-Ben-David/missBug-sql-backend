@@ -11,12 +11,28 @@ export const bugService = {
 
 async function query(filterBy = {}) {
     try {
-        const namePart = filterBy.name || ''
-        const query = `SELECT * FROM bug  
-                     WHERE bug.name LIKE '%${namePart}%' OR
-                     bug.description LIKE '%${namePart}%'`
+        const namePart = `%${filterBy.name || ''}%`
+        const severity = filterBy.severity || null
+        console.log('filterBy', filterBy)
 
-        return dbService.runSQL(query)
+        let query = `SELECT * FROM bug WHERE 1=1`
+        const params = []
+
+        if (filterBy.name) {
+            query += ` AND (bug.name LIKE ? OR bug.description LIKE ?)`
+            params.push(namePart, namePart)
+        }
+
+        if (filterBy.severity !== null) {
+            query += ` AND bug.severity >= ?`
+            params.push(filterBy.severity)
+        }
+
+        console.log('query:', query)
+        console.log('params:', params)
+
+        return dbService.runSQL(query, params)
+
     } catch (err) {
         loggerService.error('cannot find bugs', err)
         throw err
