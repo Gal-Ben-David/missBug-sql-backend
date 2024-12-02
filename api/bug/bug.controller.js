@@ -4,11 +4,10 @@ import { socketService } from '../../services/socket.service.js'
 
 export async function getBugs(req, res) {
     try {
-
-        console.log(req.query)
         const filterBy = {
             name: req.query.title || '',
             severity: +req.query.severity || 0,
+            label: req.query.label || ''
         }
 
         const sortBy = {
@@ -38,14 +37,23 @@ export async function getBugById(req, res) {
 export async function addBug(req, res) {
     // const { loggedinUser } = req
     try {
+        console.log('req.body', req.body)
         const bug = {
             name: req.body.title,
             description: req.body.description,
-            severity: req.body.severity
+            severity: req.body.severity,
+            labels: req.body.labels
         }
-
         const addedBug = await bugService.add(bug)
+        const bugId = addedBug.insertId
+
+        for (const label of bug.labels) {
+            const labelId = await bugService.getLabelIdByName(label)
+            await bugService.addBugLabel(bugId, labelId)
+        }
+        addedBug.id = bugId
         res.send(addedBug)
+
     } catch (err) {
         loggerService.error('Failed to add bug', err)
         res.status(500).send({ err: 'Failed to add bug' })

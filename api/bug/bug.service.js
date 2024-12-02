@@ -7,20 +7,32 @@ export const bugService = {
     getById,
     add,
     update,
+    getLabelIdByName,
+    addBugLabel
 }
 
 async function query(filterBy = {}, sortBy = {}) {
     try {
         const namePart = `%${filterBy.name || ''}%`
         // const severity = filterBy.severity || null
-        let query = `SELECT * FROM bug WHERE 1=1`
+        let query = `SELECT DISTINCT bug.* FROM bug`
+
         const sortColumn = sortBy.column || 'name'
         const sortOrder = sortBy.dir === 1 ? 'ASC' : 'DESC'
+        const label = filterBy.label || ''
+        const labelId = label ? await getLabelIdByName(label) : ''
         const params = []
 
+        if (labelId) {
+            query += ` LEFT JOIN bug_label bl ON bug.id = bl.bug_id
+                       LEFT JOIN label l ON bl.label_id = l.id`
+        }
+
         if (filterBy.name) {
-            query += ` AND (bug.name LIKE ? OR bug.description LIKE ?)`
+            query += ` WHERE (bug.name LIKE ? OR bug.description LIKE ?)`
             params.push(namePart, namePart)
+        } else {
+            query += ` WHERE 1=1`
         }
 
         if (filterBy.severity) {
@@ -28,7 +40,14 @@ async function query(filterBy = {}, sortBy = {}) {
             params.push(filterBy.severity)
         }
 
-        query += ` ORDER BY ${sortColumn} ${sortOrder}`
+        if (labelId) {
+            query += ` AND l.id IN (?)`
+            params.push(labelId)
+        }
+
+        query += ` ORDER BY bug.${sortColumn} ${sortOrder}`
+
+        console.log('query', query)
 
         return dbService.runSQL(query, params)
 
@@ -91,4 +110,22 @@ async function update(bug) {
         loggerService.error(`cannot update bug ${bug._id}`, err)
         throw err
     }
+}
+
+async function getLabelIdByName(labelName) {
+    try {
+        const query = 'SELECT id FROM label WHERE name = ?'
+        const result = await dbService.runSQL(query, [labelName])
+        if (result.length > 0) {
+            return result[0].id
+        }
+    } catch (err) {
+        console.error(`Label ${labelName} not found`, err)
+    }
+}
+
+// Add entry to `bug_label` table
+async function addBugLabel(bugId, labelId) {
+    const query = 'INSERT INTO bug_label (bug_id, label_id) VALUES (?, ?)'
+    await dbService.runSQL(query, [bugId, labelId])
 }
