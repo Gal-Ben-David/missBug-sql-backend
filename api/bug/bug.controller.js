@@ -4,11 +4,19 @@ import { socketService } from '../../services/socket.service.js'
 
 export async function getBugs(req, res) {
     try {
+
+        console.log(req.query)
         const filterBy = {
             name: req.query.title || '',
             severity: +req.query.severity || 0,
         }
-        const bugs = await bugService.query(filterBy)
+
+        const sortBy = {
+            column: req.query.selector || 'name',
+            dir: +req.query.selector || 1
+        }
+
+        const bugs = await bugService.query(filterBy, sortBy)
         res.send(bugs)
     } catch (err) {
         loggerService.error('Cannot get bugs', err)
@@ -31,7 +39,7 @@ export async function addBug(req, res) {
     // const { loggedinUser } = req
     try {
         const bug = {
-            name: req.body.name,
+            name: req.body.title,
             description: req.body.description,
             severity: req.body.severity
         }

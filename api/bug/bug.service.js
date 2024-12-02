@@ -9,13 +9,13 @@ export const bugService = {
     update,
 }
 
-async function query(filterBy = {}) {
+async function query(filterBy = {}, sortBy = {}) {
     try {
         const namePart = `%${filterBy.name || ''}%`
-        const severity = filterBy.severity || null
-        console.log('filterBy', filterBy)
-
+        // const severity = filterBy.severity || null
         let query = `SELECT * FROM bug WHERE 1=1`
+        const sortColumn = sortBy.column || 'name'
+        const sortOrder = sortBy.dir === 1 ? 'ASC' : 'DESC'
         const params = []
 
         if (filterBy.name) {
@@ -23,13 +23,12 @@ async function query(filterBy = {}) {
             params.push(namePart, namePart)
         }
 
-        if (filterBy.severity !== null) {
+        if (filterBy.severity) {
             query += ` AND bug.severity >= ?`
             params.push(filterBy.severity)
         }
 
-        console.log('query:', query)
-        console.log('params:', params)
+        query += ` ORDER BY ${sortColumn} ${sortOrder}`
 
         return dbService.runSQL(query, params)
 
