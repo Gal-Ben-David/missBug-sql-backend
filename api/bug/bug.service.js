@@ -47,8 +47,6 @@ async function query(filterBy = {}, sortBy = {}) {
 
         query += ` ORDER BY bug.${sortColumn} ${sortOrder}`
 
-        console.log('query', query)
-
         return dbService.runSQL(query, params)
 
     } catch (err) {

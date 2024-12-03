@@ -1,11 +1,14 @@
 import http from 'http'
 import cors from 'cors'
 import express from 'express'
+import cookieParser from 'cookie-parser'
 
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 import { bugRoutes } from './api/bug/bug.routes.js'
+import { authRoutes } from './api/auth/auth.routes.js'
+import { userRoutes } from './api/user/user.routes.js'
 
 import { setupSocketAPI } from './services/socket.service.js'
 import { loggerService } from './services/logger.service.js'
@@ -19,7 +22,7 @@ const app = express()
 const server = http.createServer(app)
 
 app.use(express.json()) //needed for the request bodies
-// app.use(cookieParser())
+app.use(cookieParser())
 
 if (process.env.NODE_ENV === 'production') {
     // Express serve static files on production environment
@@ -45,6 +48,8 @@ if (process.env.NODE_ENV === 'production') {
 
 // routes
 app.use('/api/bug', bugRoutes)
+app.use('/api/auth', authRoutes)
+app.use('/api/user', userRoutes)
 
 setupSocketAPI(server)
 
