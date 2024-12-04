@@ -76,7 +76,7 @@ async function getById(bugId) {
 async function remove(bugId) {
     try {
         const query = `DELETE FROM bug  
-                     WHERE id = ?`
+                     WHERE id=?`
 
         return dbService.runSQL(query, [bugId])
     } catch (err) {
@@ -89,6 +89,13 @@ async function add(bug) {
     try {
         const query = `INSERT INTO bug (name, description, severity, creator_id, createdAt) 
                        VALUES (?, ?, ?, ?, NOW())`
+
+        if (!bug.name) {
+            throw new Error('Bug name is required')
+        }
+        if (!bug.severity) {
+            throw new Error('Bug severity is required')
+        }
 
         const values = [
             bug.name,
@@ -107,8 +114,8 @@ async function add(bug) {
 
 async function update(bug) {
     try {
-        const query = `UPDATE bug SET severity = ?
-                       WHERE id = ?`
+        const query = `UPDATE bug SET severity=?
+                       WHERE id=?`
         return dbService.runSQL(query, [bug.severity, bug.id])
 
     } catch (err) {
