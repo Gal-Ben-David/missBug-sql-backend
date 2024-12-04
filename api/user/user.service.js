@@ -32,10 +32,12 @@ async function query(filterBy = {}) {
 
 async function getById(userId) {
 	try {
-		const collection = await dbService.getCollection('user')
-		const user = await collection.findOne({ _id: ObjectId.createFromHexString(userId) })
-		delete user.password
-		return user
+		const query = 'SELECT _id, password, fullname, imgUrl, isAdmin FROM user WHERE _id = ?'
+		const result = await dbService.runSQL(query, [userId])
+		if (result.length > 0) {
+			delete result[0].password //result[0] is the user
+			return result[0]
+		}
 	} catch (err) {
 		loggerService.error(`while finding user ${userId}`, err)
 		throw err
@@ -43,9 +45,9 @@ async function getById(userId) {
 }
 async function getByUsername(username) {
 	try {
-		const query = 'SELECT _id, password, fullname, imgUrl FROM user WHERE username = ?'
+		const query = 'SELECT _id, password, fullname, imgUrl, isAdmin FROM user WHERE username = ?'
 		const result = await dbService.runSQL(query, [username])
-		console.log('result', result)
+		console.log('Result from DB:', result)
 		if (result.length > 0) {
 			return result[0]
 		}

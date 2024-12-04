@@ -6,6 +6,7 @@ export async function login(req, res) {
 
     try {
         const user = await authService.login(username, password)
+        console.log('user login', user)
         const loginToken = authService.getLoginToken(user)
 
         loggerService.info('User login: ', user)

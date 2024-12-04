@@ -35,14 +35,17 @@ export async function getBugById(req, res) {
 }
 
 export async function addBug(req, res) {
-    // const { loggedinUser } = req
+    const { loggedinUser } = req
+
+    console.log('loggedinUser', loggedinUser)
     try {
         console.log('req.body', req.body)
         const bug = {
             name: req.body.title,
             description: req.body.description,
             severity: req.body.severity,
-            labels: req.body.labels
+            labels: req.body.labels,
+            creatorId: loggedinUser._id
         }
         const addedBug = await bugService.add(bug)
         const bugId = addedBug.insertId

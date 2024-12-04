@@ -1,5 +1,6 @@
 import express from 'express'
 import { getBugs, getBugById, addBug, updateBug, removeBug } from './bug.controller.js'
+import { requireAuth } from '../../middlewares/requireAuth.middleware.js'
 
 export const bugRoutes = express.Router()
 
@@ -8,7 +9,7 @@ export const bugRoutes = express.Router()
 
 bugRoutes.get('/', getBugs)
 bugRoutes.get('/:id', getBugById)
-bugRoutes.post('/', addBug)
+bugRoutes.post('/', requireAuth, addBug)
 bugRoutes.put('/:id', updateBug)
 bugRoutes.delete('/:id', removeBug)
 

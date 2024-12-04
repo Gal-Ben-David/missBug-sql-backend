@@ -15,7 +15,13 @@ async function query(filterBy = {}, sortBy = {}) {
     try {
         const namePart = `%${filterBy.name || ''}%`
         // const severity = filterBy.severity || null
-        let query = `SELECT DISTINCT bug.* FROM bug`
+        let query = `SELECT DISTINCT bug.id,
+                        bug.name,
+                        bug.description,
+                        bug.severity,
+                        bug.createdAt,
+                        bug.creator_id AS creatorId 
+                    FROM bug`
 
         const sortColumn = sortBy.column || 'name'
         const sortOrder = sortBy.dir === 1 ? 'ASC' : 'DESC'
@@ -81,14 +87,15 @@ async function remove(bugId) {
 
 async function add(bug) {
     try {
-        const query = `INSERT INTO bug (name, description, severity, createdAt) 
-                       VALUES (?, ?, ?, NOW())`
+        const query = `INSERT INTO bug (name, description, severity, creator_id, createdAt) 
+                       VALUES (?, ?, ?, ?, NOW())`
 
         const values = [
             bug.name,
             bug.description,
             bug.severity,
-            // JSON.stringify(bug.creator), 
+            bug.creatorId
+            // JSON.stringify(bug.creator),
         ]
 
         return dbService.runSQL(query, values)
