@@ -48,13 +48,13 @@ export async function addBug(req, res) {
             creatorId: loggedinUser._id
         }
         const addedBug = await bugService.add(bug)
-        const bugId = addedBug.insertId
+        const bugId = addedBug.id
 
         for (const label of bug.labels) {
             const labelId = await bugService.getLabelIdByName(label)
             await bugService.addBugLabel(bugId, labelId)
         }
-        addedBug.id = bugId
+
         res.send(addedBug)
 
     } catch (err) {

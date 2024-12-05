@@ -105,7 +105,17 @@ async function add(bug) {
             // JSON.stringify(bug.creator),
         ]
 
-        return dbService.runSQL(query, values)
+        const result = await dbService.runSQL(query, values)
+        const bugId = result.insertId
+
+        const selectQuery = `SELECT * FROM bug WHERE id=?`
+        const [addedBug] = await dbService.runSQL(selectQuery, [bugId])
+
+        if (!addedBug) {
+            throw new Error('Failed to fetch the added bug')
+        }
+        return addedBug
+
     } catch (err) {
         loggerService.error('cannot insert bug', err)
         throw err
@@ -116,7 +126,13 @@ async function update(bug) {
     try {
         const query = `UPDATE bug SET severity=?
                        WHERE id=?`
-        return dbService.runSQL(query, [bug.severity, bug.id])
+        await dbService.runSQL(query, [bug.severity, bug.id])
+
+        const selectQuery = `SELECT * FROM bug WHERE id=?`
+        const results = await dbService.runSQL(selectQuery, [bug.id])
+
+        if (results.length === 0) throw new Error('Bug not found after update')
+        return results[0] // Return the updated bug
 
     } catch (err) {
         loggerService.error(`cannot update bug ${bug._id}`, err)
